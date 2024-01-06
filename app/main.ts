@@ -51,7 +51,7 @@ async function jiggerStartFn() {
       // robot.moveMouse(x, y);
       if (jigger) {
         mouse.move([new Point(x, y)]);
-        await wait(1);
+        await wait(3);
       } else {
         await wait(1000);
         calculate();

@@ -1,10 +1,65 @@
-import {app, BrowserWindow, screen} from 'electron';
+import { app, BrowserWindow, screen, ipcRenderer, ipcMain, Screen } from 'electron';
 import * as path from 'path';
 import * as fs from 'fs';
+import {
+  mouse,
+  singleWord,
+  sleep,
+  useConsoleLogger,
+  ConsoleLogLevel,
+  straightTo,
+  centerOf,
+  Button,
+  getActiveWindow,
+  Point,
+} from "@nut-tree/nut-js";
+
+
+let jigger = false;
 
 let win: BrowserWindow | null = null;
 const args = process.argv.slice(1),
   serve = args.some(val => val === '--serve');
+
+const wait = (milisecond = 1000) => {
+  return new Promise((resolve, reject) => {
+    setTimeout(() => {
+      resolve(undefined);
+    }, milisecond)
+  });
+}
+
+async function jiggerStartFn() {
+  // Speed up the mouse.
+  let size: Electron.Size = undefined as any;
+
+  let twoPI: number = undefined as any;
+  let height: number = undefined as any;
+  let width: number = undefined as any;
+
+  const calculate = () => {
+    size = screen.getPrimaryDisplay().size;
+    const scale = screen.getPrimaryDisplay().scaleFactor;
+    twoPI = Math.PI * 2.0;
+    height = ( Math.floor( size.height * scale) / 2) - 10;
+    width = Math.floor(size.width * scale);
+  }
+  while (true) {
+    calculate();
+    for (var x = 0; x < width; x++) {
+      const y = height * Math.sin((twoPI * x) / width) + height;
+      // robot.moveMouse(x, y);
+      if (jigger) {
+        mouse.move([new Point(x, y)]);
+        await wait(1);
+      } else {
+        await wait(1000);
+        calculate();
+      }
+    }
+  }
+
+}
 
 function createWindow(): BrowserWindow {
 
@@ -34,13 +89,34 @@ function createWindow(): BrowserWindow {
     let pathIndex = './index.html';
 
     if (fs.existsSync(path.join(__dirname, '../dist/index.html'))) {
-       // Path when running electron in local folder
+      // Path when running electron in local folder
       pathIndex = '../dist/index.html';
     }
 
     const url = new URL(path.join('file:', __dirname, pathIndex));
     win.loadURL(url.href);
   }
+
+
+
+  // let jig = false;
+  // ipcRenderer.on('jiggle', (event) => {
+  //   // ipcRenderer.sco
+  //   console.log('hellasdo!')
+
+  // });
+  // console.log('KURWA')
+  // ipcMain.on('jiggle', (event) => {
+  //   event.returnValue = 'pizda';
+  //   console.log('helloasasdd!')
+
+  // });
+
+  // ipcMain.handle('jiggle', async (event, someArgument) => {
+  //   // const result = await doSomeWork(someArgument)
+  //   return 'eleoel'
+  // })
+
 
   // Emitted when the window is closed.
   win.on('closed', () => {
@@ -49,6 +125,22 @@ function createWindow(): BrowserWindow {
     // when you should delete the corresponding element.
     win = null;
   });
+
+
+  ipcMain.on('set-title', (event, title) => {
+    jigger = !jigger;
+    // const webContents = event.sender
+    // const win = BrowserWindow.fromWebContents(webContents)
+    // win!.setTitle(title)
+    // mouse.move([new Point(500, 500)]);
+    // jiggerStartFn();
+    event.returnValue = 'pizda';
+
+  });
+  jiggerStartFn();
+  // win.webContents.openDevTools();
+
+
 
   return win;
 }
@@ -76,6 +168,7 @@ try {
       createWindow();
     }
   });
+
 
 } catch (e) {
   // Catch Error

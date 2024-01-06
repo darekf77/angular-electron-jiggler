@@ -1,7 +1,8 @@
-<div class="container">
-  <h1 class="title">
-    {{ 'PAGES.HOME.TITLE' | translate }}
-  </h1>
+<button class="container"
+        (click)="toogleEnable()"
+        [style.width.px]="width"
+        [style.height.px]="height"
+        style="color:white; font-size: 80px;">
+  ENABLE: {{ jigglerEnable }}
 
-  <a routerLink="/detail">{{ 'PAGES.HOME.GO_TO_DETAIL' | translate }}</a>
-</div>
+</button>
